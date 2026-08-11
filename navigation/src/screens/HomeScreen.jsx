@@ -58,17 +58,19 @@ function HomeScreen({ navigation }) {
               Message a certified agri-chemical{'\n'}expert directly.
             </Text>
             <TouchableOpacity style={styles.upgradeButton}>
-              <Text style={styles.upgradeText}>
-                <Image
+              <Image
                   source={require('../../assets/white-lock-icon.png')}
                   style={{ width: 20, height: 20 }}
-                />
-                 Upgrade to Unlock</Text>
+                /> 
+              <Text style={styles.upgradeText}>
+                
+                
+                Upgrade to Unlock</Text>
             </TouchableOpacity>
           </View>
           
           <Image
-            source={require('../../assets/splash-1.png')} 
+            source={require('../../assets/Doc.png')} 
             style={styles.expertImage}
           />
         </View>
@@ -214,14 +216,17 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-start', 
+    display: 'flex',
+    gap: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   upgradeText: {
     color: '#fff',
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '500',
-    display: 'flex',
-    gap: 5,
+   
   },
   sectionHeader: {
     flexDirection: 'row',
