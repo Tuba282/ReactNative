@@ -2,8 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenWrapper from '../components/ScreenWrapper';
-import BottomTab from '../components/BottomTab';
-import CreatePostModal from '../components/CreatePostModal';
+import { TextInput, Modal } from 'react-native';
+import ImageViewer from 'react-native-image-zoom-viewer';
+
+const DUMMY_POSTS = [
+  {
+    id: '1', userName: 'joshua_l',
+    images: ['https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1524413840845-3c3c661ddfa2?auto=format&fit=crop&w=800&q=80']
+  },
+  {
+    id: '2', userName: 'joshua_l',
+    images: ['https://images.unsplash.com/photo-1512412046876-f386342eddb3?auto=format&fit=crop&w=800&q=80']
+  },
+  {
+    id: '3', userName: 'user',
+    images: ['https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80']
+  }
+];
 
 const { width } = Dimensions.get('window');
 
@@ -13,21 +28,25 @@ const ProfileScreen = ({ navigation, route }) => {
   const [profileImage, setProfileImage] = useState('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=500&q=60');
   const [fullName, setFullName] = useState('User');
   const [username, setUsername] = useState('user');
-  const [isCreateModalVisible, setCreateModalVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
+  const [viewerImages, setViewerImages] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
       const storedImage = await AsyncStorage.getItem('profileImage');
-      const storedFullName = await AsyncStorage.getItem('name');
+      const storedFullName = await AsyncStorage.getItem('fullName'); // Fixed key
       const storedUsername = await AsyncStorage.getItem('username');
 
       if (storedImage) setProfileImage(storedImage);
       if (storedFullName) setFullName(storedFullName);
       if (storedUsername) setUsername(storedUsername);
 
-      // Filter posts that belong to this user
-      const filtered = allPosts.filter(p => p.userName === (storedUsername || 'user') || p.userName === 'joshua_l'); 
-      // Note: included 'joshua_l' so we have dummy posts visible for demo if no real posts exist
+      const currentUsername = storedUsername || 'user';
+      // Filter posts that belong to this user from DUMMY_POSTS
+      const filtered = DUMMY_POSTS.filter(p => p.userName === currentUsername || p.userName === 'joshua_l'); 
       setUserPosts(filtered);
     };
 
@@ -73,19 +92,45 @@ const ProfileScreen = ({ navigation, route }) => {
       </View>
 
       <View style={styles.bioContainer}>
-        <Text style={styles.bioName}>{fullName}</Text>
-        <Text style={styles.bioText}>Digital goodies designer @pixsellz</Text>
-        <Text style={styles.bioText}>Everything is designed.</Text>
+        {isEditing ? (
+          <>
+            <TextInput style={styles.editInput} value={editName} onChangeText={setEditName} placeholder="Full Name" />
+            <TextInput style={styles.editInput} value={editUsername} onChangeText={setEditUsername} placeholder="Username" />
+          </>
+        ) : (
+          <>
+            <Text style={styles.bioName}>{fullName}</Text>
+            <Text style={styles.bioText}>Digital goodies designer @pixsellz</Text>
+            <Text style={styles.bioText}>Everything is designed.</Text>
+          </>
+        )}
       </View>
 
-      <TouchableOpacity style={styles.editProfileButton}>
-        <Text style={styles.editProfileText}>Edit Profile</Text>
+      <TouchableOpacity style={styles.editProfileButton} onPress={async () => {
+        if (isEditing) {
+          setFullName(editName);
+          setUsername(editUsername);
+          await AsyncStorage.setItem('name', editName);
+          await AsyncStorage.setItem('username', editUsername);
+        } else {
+          setEditName(fullName);
+          setEditUsername(username);
+        }
+        setIsEditing(!isEditing);
+      }}>
+        <Text style={styles.editProfileText}>{isEditing ? 'Save Profile' : 'Edit Profile'}</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderGridItem = ({ item }) => (
-    <TouchableOpacity style={styles.gridItem}>
+    <TouchableOpacity 
+      style={styles.gridItem} 
+      onPress={() => {
+        setViewerImages(item.images.map(img => ({ url: img })));
+        setIsViewerVisible(true);
+      }}
+    >
       <Image source={{ uri: item.images[0] }} style={styles.gridImage} />
       {item.images.length > 1 && (
         <Image source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3342/3342137.png' }} style={styles.multipleIcon} />
@@ -105,22 +150,15 @@ const ProfileScreen = ({ navigation, route }) => {
         numColumns={3}
         showsVerticalScrollIndicator={false}
       />
-
-      <BottomTab 
-        profileImage={profileImage} 
-        posts={allPosts} 
-        onCreatePostPress={() => setCreateModalVisible(true)} 
-      />
-
-      <CreatePostModal
-        visible={isCreateModalVisible}
-        onClose={() => setCreateModalVisible(false)}
-        onPostCreated={(newPost) => {
-          // Since we are mocking, if we create a post here, we can route back to Home or just add it to userPosts locally
-          // A real app would use context/redux to sync state across screens.
-          navigation.navigate('Home', { showCreatePost: false, newPost });
-        }}
-      />
+      
+      <Modal visible={isViewerVisible} transparent={true} onRequestClose={() => setIsViewerVisible(false)}>
+        <ImageViewer 
+          imageUrls={viewerImages}
+          enableSwipeDown={true}
+          onSwipeDown={() => setIsViewerVisible(false)}
+          onCancel={() => setIsViewerVisible(false)}
+        />
+      </Modal>
     </ScreenWrapper>
   );
 };
@@ -249,6 +287,13 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     tintColor: '#fff',
+  },
+  editInput: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#dbdbdb',
+    marginBottom: 8,
+    paddingVertical: 4,
+    fontSize: 14,
   }
 });
 

@@ -11,7 +11,7 @@ import {
 
 const { width } = Dimensions.get('window');
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, isLiked, onLikeToggle }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleScroll = event => {
@@ -73,12 +73,12 @@ const PostCard = ({ post }) => {
       {/* Action Bar */}
       <View style={styles.actionBar}>
         <View style={styles.actionLeft}>
-          <TouchableOpacity style={styles.actionIcon}>
+          <TouchableOpacity style={styles.actionIcon} onPress={() => onLikeToggle && onLikeToggle(post.id)}>
             <Image
               source={{
-                uri: 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png',
+                uri: isLiked ? 'https://cdn-icons-png.flaticon.com/512/833/833472.png' : 'https://cdn-icons-png.flaticon.com/512/1077/1077035.png',
               }}
-              style={styles.icon}
+              style={[styles.icon, isLiked && { tintColor: '#ed4956' }]}
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionIcon}>

@@ -10,8 +10,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ScreenWrapper from '../components/ScreenWrapper';
 import PostCard from '../components/PostCard';
 import CreatePostModal from '../components/CreatePostModal';
-import BottomTab from '../components/BottomTab';
-
+import StoriesBar from '../components/StoriesBar';
+// import BottomTab from '../components/BottomTab'; // Removed as we use Bottom Tabs Navigator
 // Dummy initial data
 const INITIAL_POSTS = [
   {
@@ -74,6 +74,7 @@ const HomeScreen = ({ navigation, route }) => {
   const [profileImage, setProfileImage] = useState(
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=500&q=60',
   );
+  const [likedPosts, setLikedPosts] = useState([]);
 
   useEffect(() => {
     // Check if we should show the create post modal immediately (e.g. after login/signup)
@@ -98,12 +99,31 @@ const HomeScreen = ({ navigation, route }) => {
       if (storedImage) {
         setProfileImage(storedImage);
       }
+      
+      const storedLikes = await AsyncStorage.getItem('likedPosts');
+      if (storedLikes) {
+        setLikedPosts(JSON.parse(storedLikes));
+      }
     };
     fetchProfileData();
   }, [route.params?.showCreatePost, route.params?.newPost]);
 
   const handleCreatePost = newPost => {
     setPosts([newPost, ...posts]);
+  };
+
+  const handleLikeToggle = async (postId) => {
+    let newLikedPosts;
+    if (likedPosts.includes(postId)) {
+      newLikedPosts = likedPosts.filter(id => id !== postId);
+    } else {
+      newLikedPosts = [...likedPosts, postId];
+    }
+    setLikedPosts(newLikedPosts);
+    await AsyncStorage.setItem('likedPosts', JSON.stringify(newLikedPosts));
+    // Also store the actual post objects for the HeartScreen to display
+    const likedPostObjects = posts.filter(p => newLikedPosts.includes(p.id));
+    await AsyncStorage.setItem('likedPostObjects', JSON.stringify(likedPostObjects));
   };
 
   const renderHeader = () => (
@@ -135,17 +155,19 @@ const HomeScreen = ({ navigation, route }) => {
 
       <FlatList
         data={posts}
-        renderItem={({ item }) => <PostCard post={item} />}
+        ListHeaderComponent={<StoriesBar />}
+        renderItem={({ item }) => (
+          <PostCard 
+            post={item} 
+            isLiked={likedPosts.includes(item.id)}
+            onLikeToggle={handleLikeToggle}
+          />
+        )}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
       />
 
-      <BottomTab 
-        profileImage={profileImage}
-        posts={posts}
-        onCreatePostPress={() => setCreateModalVisible(true)}
-      />
-
+      {/* BottomTab removed */}
       <CreatePostModal
         visible={isCreateModalVisible}
         onClose={() => setCreateModalVisible(false)}

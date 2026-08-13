@@ -10,8 +10,7 @@ import EmailVerificationScreen from './src/screens/auth/EmailVerificationScreen'
 import AddProfilePictureScreen from './src/screens/auth/AddProfilePictureScreen';
 import EditProfilePictureScreen from './src/screens/auth/EditProfilePictureScreen';
 import WelcomeScreen from './src/screens/auth/WelcomeScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
+import MainTabNavigator from './src/navigation/MainTabNavigator';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
@@ -43,8 +42,7 @@ const App = () => {
             component={EditProfilePictureScreen}
           />
           <Stack.Screen name="Welcome" component={WelcomeScreen} />
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="MainTabs" component={MainTabNavigator} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

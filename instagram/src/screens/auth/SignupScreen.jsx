@@ -30,7 +30,7 @@ const SignupScreen = ({ navigation }) => {
     } catch (e) {
       console.log('Error saving user data:', e);
     }
-    navigation.navigate('EmailVerification');
+    navigation.replace('MainTabs');
   };
 
   return (

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, Text } from 'react-native';
 import ScreenWrapper from '../../components/ScreenWrapper';
 
 const SplashScreen = ({ navigation }) => {
@@ -14,10 +14,11 @@ const SplashScreen = ({ navigation }) => {
   return (
     <ScreenWrapper style={styles.container}>
       <Image
-        source={{ uri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Instagram_logo_2016.svg/2048px-Instagram_logo_2016.svg.png' }}
+        source={require('../../../assets/insta.png')}
         style={styles.logo}
         resizeMode="contain"
       />
+      <Text style={styles.splashText}>Instagram</Text>
     </ScreenWrapper>
   );
 };
@@ -33,6 +34,12 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
   },
+  splashText: {
+    marginTop: 20,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
+  }
 });
 
 export default SplashScreen;

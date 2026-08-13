@@ -10,7 +10,7 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = () => {
     if (username && password) {
-      navigation.replace('Home', { showCreatePost: true });
+      navigation.replace('MainTabs');
     } else {
       console.log('Please enter credentials');
     }
